@@ -25,7 +25,7 @@ const REG = Core.REG;
    name decides the folder — hence the override. */
 const PATHS = Object.assign({
   offer: "../offer/",
-  shopflow: "../shopflow/",
+  shopflow: "../shopflow-app/",   // the repo is shopflow-app; the folder follows it
   invoices: "../invoices/",
 }, window.HUB_PATHS || {});
 

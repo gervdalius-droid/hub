@@ -31,6 +31,9 @@ HOME = os.path.expanduser("~")
 # bridge would be dead locally and alive only once deployed.
 MOUNTS = [
     ("/hub/", HERE),
+    # ShopFlow is published from a repo called shopflow-app, so that is the
+    # folder the hub links to; /shopflow/ stays as an alias for convenience.
+    ("/shopflow-app/", os.path.join(HOME, "shopflow")),
     ("/shopflow/", os.path.join(HOME, "shopflow")),
     ("/offer/", os.path.join(HOME, "github", "offer")),
     ("/invoices/", os.path.join(HOME, "github", "invoices")),
