@@ -25,7 +25,12 @@ from urllib.parse import unquote
 HERE = os.path.dirname(os.path.abspath(__file__))
 HOME = os.path.expanduser("~")
 
+# The hub is mounted at /hub/, not at /, on purpose: in production it is one
+# repo among several, and the apps reach its core.js as ../hub/core.js. Serving
+# it from the root would resolve that to /hub/core.js and quietly 404, so the
+# bridge would be dead locally and alive only once deployed.
 MOUNTS = [
+    ("/hub/", HERE),
     ("/shopflow/", os.path.join(HOME, "shopflow")),
     ("/offer/", os.path.join(HOME, "github", "offer")),
     ("/invoices/", os.path.join(HOME, "github", "invoices")),
@@ -33,11 +38,19 @@ MOUNTS = [
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
+    def do_GET(self):
+        if self.path in ("/", ""):
+            self.send_response(302)
+            self.send_header("Location", "/hub/")
+            self.end_headers()
+            return
+        return super().do_GET()
+
     def translate_path(self, path):
         path = unquote(path.split("?", 1)[0].split("#", 1)[0])
         path = posixpath.normpath(path)
 
-        root, rel = HERE, path
+        root, rel = HERE, path        # anything unmatched falls back to the hub
         for prefix, target in MOUNTS:
             if path == prefix.rstrip("/") or path.startswith(prefix):
                 root = target
@@ -65,7 +78,7 @@ if __name__ == "__main__":
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8750
     socketserver.TCPServer.allow_reuse_address = True
     with socketserver.TCPServer(("", port), Handler) as httpd:
-        print(f"Shop system on http://localhost:{port}/")
+        print(f"Shop system on http://localhost:{port}/hub/")
         for prefix, target in MOUNTS:
             mark = "" if os.path.isdir(target) else "   (missing)"
             print(f"   {prefix:<12} → {target}{mark}")

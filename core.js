@@ -90,7 +90,7 @@ const Core = {
   /* Invoices' buyer shape, plus the bookkeeping a shared record needs. */
   blankCustomer() {
     return {
-      id: uid("c"), kind: "company",
+      id: Core.uid("c"), kind: "company",
       name: "", code: "", vat: "", address: "", email: "", phone: "", contact: "",
       term: "", note: "", tags: [],
       createdAt: Date.now(), updatedAt: Date.now(), deleted: false,
@@ -123,7 +123,7 @@ const Core = {
 
   /* Matching is what makes importing three apps' worth of clients possible.
      A company code is proof; a VAT number nearly so; a name only suggests. */
-  normName: (s) => deacc(String(s || "").toLowerCase())
+  normName: (s) => Core.deacc(String(s || "").toLowerCase())
     .replace(/\b(uab|mb|ab|ib|vsi|všį|iį|ii|ltd|llc|as|ou|sia)\b/g, "")
     .replace(/[^a-z0-9]+/g, " ").trim(),
 
@@ -174,7 +174,9 @@ const Core = {
      document exists, who it is for, and what it came from. `app` + `ref`
      point back at the record in its own app, so nothing is duplicated. */
 
-  DOC_KINDS: ["quote", "order", "invoice", "waybill"],
+  /* An engineering project is not an order — the shop treats designing a
+     kitchen and building one as different work, so the index does too. */
+  DOC_KINDS: ["quote", "design", "order", "invoice", "waybill"],
 
   docs({ kind, customerId, app } = {}) {
     return this.state.docs.filter(d => !d.deleted
@@ -192,7 +194,7 @@ const Core = {
     if (!app || !ref || !kind) return null;
     let d = this.state.docs.find(x => x.app === app && x.ref === String(ref));
     if (!d) {
-      d = { id: uid("d"), app, ref: String(ref), createdAt: Date.now() };
+      d = { id: Core.uid("d"), app, ref: String(ref), createdAt: Date.now() };
       this.state.docs.push(d);
     }
     Object.assign(d, {
@@ -413,35 +415,40 @@ const Core = {
 };
 
 /* ============================================================
-   Shared helpers — every app already had its own copy of these
+   Shared helpers
+
+   These hang off Core rather than standing as top-level functions: this file
+   is loaded INTO apps that already declare esc(), Core.uid() and fmtDate() of
+   their own, and a duplicate top-level const is a SyntaxError that takes the
+   whole app down. Nothing here may claim a bare global.
    ============================================================ */
 
-function uid(p) { return (p || "") + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3); }
+Core.uid = function (p) { return (p || "") + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3); };
 
 /* Length-preserving, so a match index into the folded copy still points at
    the same character in the original. The registry search depends on it. */
-function deacc(s) {
+Core.deacc = function (s) {
   return String(s)
     .replace(/[ąĄ]/g, "a").replace(/[čČ]/g, "c").replace(/[ęėĘĖ]/g, "e")
     .replace(/[įĮ]/g, "i").replace(/[šŠ]/g, "s").replace(/[ųūŲŪ]/g, "u")
     .replace(/[žŽ]/g, "z")
-    .normalize("NFD").replace(/[̀-ͯ]/g, "");
-}
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+};
 
-function esc(v) {
+Core.esc = function (v) {
   return String(v ?? "").replace(/[&<>"']/g, m => (
     { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
-}
+};
 
-function eur(n) {
+Core.eur = function (n) {
   if (n === null || n === undefined || isNaN(n)) return "—";
   return Number(n).toLocaleString("lt-LT", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
-}
+};
 
-function fmtDate(ts) {
+Core.fmtDate = function (ts) {
   if (!ts) return "—";
   return new Date(ts).toLocaleDateString("lt-LT", { year: "numeric", month: "short", day: "numeric" });
-}
+};
 
 /* ============================================================
    REG — the Lithuanian company registry, offline
@@ -451,7 +458,7 @@ function fmtDate(ts) {
    headers, which is why it is prebuilt rather than queried live. Served from
    the invoices app's own folder — same origin, so one copy serves everything.
    ============================================================ */
-const REG = {
+Core.REG = {
   url: "../invoices/data/lt-registry.txt.gz",
   cacheName: "inv-registry-v1",           // the same cache the invoices app fills
   state: "idle",                          // idle | loading | ready | error
@@ -494,7 +501,7 @@ const REG = {
         if (text == null) text = await buf.text();
         if (!/^\d+\t/.test(text)) throw new Error("registry payload not recognised");
         this.text = text;
-        this.norm = deacc(text.toLowerCase());
+        this.norm = Core.deacc(text.toLowerCase());
         this.offT = this._offsets(this.text);
         this.offN = this._offsets(this.norm);
         this.lines = this.offT.length - 1;
@@ -530,7 +537,7 @@ const REG = {
   search(q, limit) {
     limit = limit || 20;
     if (this.state !== "ready") return [];
-    const nq = deacc(String(q || "").toLowerCase()).trim();
+    const nq = Core.deacc(String(q || "").toLowerCase()).trim();
     if (nq.length < 3) return [];
     const isCode = /^\d{5,}$/.test(nq);
     const SCAN = 600;

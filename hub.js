@@ -14,6 +14,12 @@
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => [...(r || document).querySelectorAll(s)];
 
+/* core.js keeps its helpers on Core, because it is also loaded into apps that
+   already declare esc()/uid()/fmtDate() of their own. The hub has no such
+   clash, so it aliases them for readability. */
+const esc = Core.esc, eur = Core.eur, fmtDate = Core.fmtDate, deacc = Core.deacc;
+const REG = Core.REG;
+
 /* Where each module lives. Paths are relative so the same build works on
    localhost (serve.py mounts them here) and on GitHub Pages, where the repo
    name decides the folder — hence the override. */
@@ -39,7 +45,7 @@ const LT = {
   "Type a company name or code…": "Įveskite pavadinimą arba kodą…",
   "Loading the registry…": "Kraunamas registras…",
   "Documents": "Dokumentai", "No documents yet": "Dokumentų dar nėra",
-  "Quote": "Pasiūlymas", "Order": "Užsakymas", "Invoice": "Sąskaita", "Waybill": "Važtaraštis",
+  "Quote": "Pasiūlymas", "Design": "Projektas", "Order": "Užsakymas", "Invoice": "Sąskaita", "Waybill": "Važtaraštis",
   "Pipeline": "Darbų eiga", "Recent": "Paskutiniai",
   "Needs attention": "Reikia dėmesio",
   "Import from the apps": "Importuoti iš programų",

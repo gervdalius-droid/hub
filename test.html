@@ -3,6 +3,8 @@
 <div id="app"></div><div id="modal-root"></div><div id="toast-root"></div>
 <script src="core.js"></script>
 <script src="hub.js"></script>
+<!-- ShopFlow's half of the integration, loaded across the shared origin -->
+<script src="../shopflow/bridge.js"></script>
 <script>
 /* ============================================================
    Hub tests
@@ -197,6 +199,70 @@ T("a document keeps its link to the app that owns it", () => {
   ok(d && d.num === "WO-1041", "found by (app, ref)");
   ok(d.app === "shopflow" && d.ref === "o1", "so the module can open its own record");
   ok(Core.docByRef("shopflow", "nope") === null, "and an unknown ref is null, not a throw");
+});
+
+/* ---------- ShopFlow's bridge, against a real Core ---------- */
+
+/* bridge.js talks to Store and D; the suite supplies just enough of them. */
+const ORDERS = [];
+window.Store = { state: { get orders() { return ORDERS; } }, save() {} };
+window.D = { orderStatus: (o) => o._st || "queued" };
+
+T("the bridge publishes ShopFlow's orders into the shared index", () => {
+  fresh();
+  ORDERS.length = 0;
+  ORDERS.push(
+    { id: "o1", num: "WO-1041", type: "prod", product: "Virtuvė", client: "UAB Kūrybos namai", createdAt: 1757000000000 },
+    { id: "o2", num: "ENG-2044", type: "eng", product: "Projektas", client: "UAB Kūrybos namai", createdAt: 1757100000000 });
+  ok(Bridge.ready(), "Core is present here, so the bridge is live");
+  ok(Bridge.sync() === 2, "both were published");
+  const docs = Core.docs({ app: "shopflow" });
+  ok(docs.length === 2, "two documents in the index :: " + docs.length);
+  ok(docs.find(d => d.num === "WO-1041").kind === "order", "production is an order");
+  ok(docs.find(d => d.num === "ENG-2044").kind === "design", "engineering is a design");
+  ok(docs.every(d => d.amount === null), "and ShopFlow claims no amount, rather than zero");
+});
+
+T("syncing twice does not duplicate, and a deleted order leaves the index", () => {
+  fresh();
+  ORDERS.length = 0;
+  ORDERS.push({ id: "o1", num: "WO-1041", type: "prod", product: "Virtuvė", client: "X", createdAt: 1 });
+  Bridge.sync(); Bridge.sync();
+  ok(Core.docs({ app: "shopflow" }).length === 1, "still one :: " + Core.docs({ app: "shopflow" }).length);
+  ORDERS.length = 0;
+  Bridge.sync();
+  ok(Core.docs({ app: "shopflow" }).length === 0, "and the deleted order is gone from the index");
+});
+
+T("a background sync matches a customer but never invents one", () => {
+  fresh();
+  const known = Core.upsertCustomer({ name: "UAB Kūrybos namai", code: "300111222" });
+  ORDERS.length = 0;
+  ORDERS.push(
+    { id: "o1", num: "WO-1", type: "prod", client: "Kūrybos namai UAB", createdAt: 1 },
+    { id: "o2", num: "WO-2", type: "prod", client: "UAB Visiškai Nauja", createdAt: 2 });
+  Bridge.sync();
+  ok(Core.customers().length === 1, "a typo on an order does not become a company :: " + Core.customers().length);
+  ok(Core.docByRef("shopflow", "o1").customerId === known.id, "the known client is matched anyway");
+  ok(Core.docByRef("shopflow", "o2").customerId === null, "and the unknown one is simply unlinked");
+});
+
+T("a name a person submits does create the shared customer", () => {
+  fresh();
+  const id = Bridge.resolveClient("UAB Naujas Klientas");
+  ok(id, "an id comes back");
+  ok(Core.customers().length === 1, "and the record exists now");
+  ok(Bridge.resolveClient("Naujas Klientas, UAB") === id, "the same name in another form is the same customer");
+  ok(Core.customers().length === 1, "still one");
+});
+
+T("the client picker offers the shared customers", () => {
+  fresh();
+  Core.upsertCustomer({ name: "UAB Alfa" });
+  Core.upsertCustomer({ name: "UAB Beta" });
+  const html = Bridge.datalistHtml();
+  ok(html.includes("UAB Alfa") && html.includes("UAB Beta"), "both names are offered");
+  ok(html.includes('id="shared-customers"'), "under the id the inputs point at");
 });
 
 /* ---------- helpers ---------- */

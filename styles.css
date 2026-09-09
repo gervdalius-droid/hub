@@ -208,6 +208,7 @@ table.rows tbody tr[data-open]:hover { background: var(--surface-2); }
   background: var(--gray-soft); color: var(--gray);
 }
 .pill.quote { background: var(--purple-soft); color: var(--purple); }
+.pill.design { background: var(--gray-soft); color: var(--text-2); }
 .pill.order { background: var(--blue-soft); color: var(--blue); }
 .pill.invoice { background: var(--green-soft); color: var(--green); }
 .pill.waybill { background: var(--orange-soft); color: var(--orange); }
