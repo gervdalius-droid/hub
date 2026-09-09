@@ -265,6 +265,20 @@ T("the client picker offers the shared customers", () => {
   ok(html.includes('id="shared-customers"'), "under the id the inputs point at");
 });
 
+/* ---------- modals ---------- */
+
+T("a click on the backdrop does not throw the dialog away", () => {
+  Modal.open(`<h3>Probe</h3><input id="probe-in" value="half-typed">
+    <button data-close>Cancel</button>`);
+  const scrim = document.querySelector(".modal-scrim");
+  ok(scrim, "the dialog opened");
+  scrim.click();
+  ok(Modal.isOpen(), "a stray click beside it leaves it open");
+  ok(document.querySelector("#probe-in").value === "half-typed", "with the work intact");
+  document.querySelector("[data-close]").click();
+  ok(!Modal.isOpen(), "and the visible Cancel still closes it");
+});
+
 /* ---------- helpers ---------- */
 
 T("deacc is length preserving, or the registry search points at the wrong line", () => {

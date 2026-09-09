@@ -717,8 +717,9 @@ const Modal = {
   open(html, bind) {
     const root = $("#modal-root");
     root.innerHTML = `<div class="modal-scrim"><div class="modal">${html}</div></div>`;
-    const scrim = $(".modal-scrim", root);
-    scrim.onclick = (e) => { if (e.target === scrim) this.close(); };
+    /* The backdrop does not close the dialog: a customer being edited is work
+       in progress, and a stray click beside it used to discard the lot. Every
+       modal has a visible Cancel, and Escape still works. */
     $$("[data-close]", root).forEach(b => b.onclick = () => this.close());
     if (bind) bind($(".modal", root));
     const first = $(".modal input:not([readonly]), .modal select", root);
