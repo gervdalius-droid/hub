@@ -1,8 +1,22 @@
-# Dėdės Baldai — viena sistema
+# Hub — one system out of several apps
 
 One shell over the shop's apps, plus the two things none of them had: a
 **customer** that all of them share, and a **document index** that ties a
 quote to its production order to its invoice.
+
+![Hub](docs/screenshot.png)
+
+**Live:** <https://gervdalius-droid.github.io/hub/>
+
+## Why this exists
+
+The shop's tools grew one problem at a time — a quote calculator, then production, then
+invoicing — so each ended up with its own idea of who a customer was, and nothing connected
+a quote to the order it became or the invoice it ended as.
+
+Rather than rewrite three working apps into one, the hub mounts them on a **single origin**
+so they can share `localStorage`, and adds the shared customer record and document index
+underneath. Each app still runs standalone; the hub is additive.
 
 ```
                   ┌──────────────── hub ────────────────┐
