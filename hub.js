@@ -536,8 +536,11 @@ const Hub = {
       }
     }
 
-    /* ShopFlow: the client is only ever a name on the order. */
-    const sf = read("shopflow.v1");
+    /* ShopFlow: the client is only ever a name on the order.
+       Its document moved to IndexedDB — too big for the 5 MB every app on this
+       domain shares — so it leaves a small index behind for exactly this. The
+       old key is still read for a tablet that has not updated yet. */
+    const sf = read("shopflow.index") || read("shopflow.v1");
     if (sf) {
       for (const o of sf.orders || []) {
         if (o.client) found.customers.push({ src: "shopflow", srcId: null, kind: "company", name: o.client });
