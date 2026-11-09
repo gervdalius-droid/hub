@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#131715">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' fill='%23131715'/%3E%3Cpath d='M15 10h18v26H15zM24 10v16M15 26h18M15 31h18' fill='none' stroke='%23f8f9f6' stroke-width='3'/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" href="https://gervdalius-droid.github.io/hub/shared/favicon-64.png">
+<link rel="apple-touch-icon" href="https://gervdalius-droid.github.io/hub/shared/touch-180.png">
 <title>Dėdės Baldai Hub</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Big+Shoulders+Display:wght@700;800;900&family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap">
 <style id="hub-css">
@@ -288,6 +289,7 @@ a.Z-entry:hover .Z-k,a.Z-entry.hit .Z-k{transform:translateX(-4px)}
 @media (max-width:860px){.sp-hero,.sp-sec,.sp-dir{grid-template-columns:1fr}.sp-h{position:static}.sp-rules li{grid-template-columns:1fr;gap:4px}}
 
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
+.dbl{display:block;width:80%;height:80%;background:currentColor;-webkit-mask:url(https://gervdalius-droid.github.io/hub/shared/logo-mask.png) center/contain no-repeat;mask:url(https://gervdalius-droid.github.io/hub/shared/logo-mask.png) center/contain no-repeat}
 </style>
 <script>window.HUB_LOCK="lapas"</script>
 </head>
@@ -301,8 +303,8 @@ a.Z-entry:hover .Z-k,a.Z-entry.hit .Z-k{transform:translateX(-4px)}
 {"id":"nesting","code":"DB-04","group":"cnc","icon":"nest","url":"https://gervdalius-droid.github.io/nesting/","name":{"lt":"Nesting","en":"Nesting"},"desc":{"lt":"Plokščių optimizavimas, išdėstymai ir etikečių spausdinimas","en":"Board optimisation, layouts and label printing"},"tag":{"lt":"Prisijungimas","en":"Login"}},
 {"id":"xxlfix","code":"DB-05","group":"cnc","icon":"code","url":"https://gervdalius-droid.github.io/xxl-fix/","name":{"lt":"XXL Fix","en":"XXL Fix"},"desc":{"lt":"XXL CNC programų taisymas ir rankinis detalių kūrimas","en":"Fix .XXL CNC programs and create panels by hand"}},
 {"id":"shopflow","code":"DB-06","group":"production","icon":"track","url":"https://gervdalius-droid.github.io/shopflow-app/","name":{"lt":"ShopFlow","en":"ShopFlow"},"desc":{"lt":"Gamybos sekimas dirbtuvėse","en":"Workshop production tracking"}},
-{"id":"prasymai","code":"DB-07","group":"staff","icon":"doc","url":"https://gervdalius-droid.github.io/hub/prasymai/","name":{"lt":"Prašymai","en":"Requests"},"desc":{"lt":"Atostogų, tėvadienių ir mamadienių prašymai: pildyti, spausdinti, registras","en":"Leave and parent-day requests: fill in, print, register"}},
-{"id":"offer","code":"DB-08","group":"staff","icon":"doc","url":"https://gervdalius-droid.github.io/offer/","name":{"lt":"Pasiūlymai","en":"Offers"},"desc":{"lt":"Savikaina ir pasiūlymai klientams","en":"Costing and customer offers"}}
+{"id":"prasymai","code":"DB-07","group":"staff","icon":"doc","url":"https://gervdalius-droid.github.io/hub/prasymai/","name":{"lt":"Prašymai","en":"Requests"},"desc":{"lt":"Atostogų, tėvadienių ir mamadienių prašymai: užpildyti, pateikti, atsispausdinti","en":"Leave and parent-day requests: fill in, submit, print"}},
+{"id":"offer","code":"DB-08","group":"office","icon":"doc","url":"https://gervdalius-droid.github.io/offer/","name":{"lt":"Pasiūlymai","en":"Offers"},"desc":{"lt":"Savikaina ir pasiūlymai klientams","en":"Costing and customer offers"}}
 ]}</script>
 <script type="application/json" id="hub-tokens">{"lapas": {"fonts": {"display": "'Schibsted Grotesk','Helvetica Neue',sans-serif", "body": "'Schibsted Grotesk','Helvetica Neue',sans-serif", "mono": "'IBM Plex Mono',ui-monospace,Menlo,monospace", "r": "3px", "r-dock": "4px"}, "light": {"bg": "#e6e8e3", "surface": "#f8f9f6", "surface-2": "#eef0ec", "ink": "#131715", "muted": "#59615b", "line": "#d2d7cf", "line-2": "#b4bbb1", "accent": "#ff4a1c", "on-accent": "#160700", "s-design": "#2f55c8", "s-cnc": "#c27c00", "s-prod": "#127c52", "s-staff": "#7a4ab8", "focus": "#ff4a1c", "shadow": "0 1px 0 rgba(19,23,21,.05),0 12px 26px -18px rgba(19,23,21,.42)"}, "dark": {"bg": "#0f1211", "surface": "#191d1b", "surface-2": "#141816", "ink": "#e9ede8", "muted": "#8e9890", "line": "#2a302c", "line-2": "#3d4540", "accent": "#ff6b3d", "on-accent": "#160700", "s-design": "#86a5ff", "s-cnc": "#f0b23a", "s-prod": "#4cc993", "s-staff": "#c3a1ff", "focus": "#ff6b3d", "shadow": "0 1px 0 rgba(0,0,0,.4),0 14px 30px -18px rgba(0,0,0,.85)"}}, "stotis": {"fonts": {"display": "'Big Shoulders Display','Arial Narrow',sans-serif", "body": "'Archivo','Helvetica Neue',sans-serif", "mono": "'IBM Plex Mono',ui-monospace,Menlo,monospace", "r": "0px", "r-dock": "0px"}, "light": {"bg": "#f2f1ec", "surface": "#ffffff", "surface-2": "#e8e7e1", "ink": "#0b1015", "muted": "#535b63", "line": "#d4d3cb", "line-2": "#0b1015", "accent": "#ffc400", "on-accent": "#0b1015", "s-design": "#1f5fe0", "s-cnc": "#b88400", "s-prod": "#0e8050", "s-staff": "#7a3fd0", "focus": "#0b1015", "shadow": "none"}, "dark": {"bg": "#121c25", "surface": "#18242f", "surface-2": "#1d2b38", "ink": "#f1f4f6", "muted": "#8fa0ae", "line": "#263646", "line-2": "#f1f4f6", "accent": "#ffc93c", "on-accent": "#0b1015", "s-design": "#7fb0ff", "s-cnc": "#ffc93c", "s-prod": "#5fd39b", "s-staff": "#c9a7ff", "focus": "#ffc93c", "shadow": "none"}}, "zurnalas": {"fonts": {"display": "'Newsreader','Iowan Old Style',Georgia,serif", "body": "'Hanken Grotesk','Helvetica Neue',sans-serif", "mono": "'IBM Plex Mono',ui-monospace,Menlo,monospace", "r": "999px", "r-dock": "999px"}, "light": {"bg": "#edefe7", "surface": "#f8f9f3", "surface-2": "#e3e6db", "ink": "#0f231c", "muted": "#56645d", "line": "#cdd2c4", "line-2": "#0f231c", "accent": "#86590a", "on-accent": "#fbf8ef", "s-design": "#2d50b8", "s-cnc": "#b5470f", "s-prod": "#1d7a46", "s-staff": "#6b4a9e", "focus": "#86590a", "shadow": "none"}, "dark": {"bg": "#0d1f19", "surface": "#122a22", "surface-2": "#0a1814", "ink": "#ece9dd", "muted": "#93a89d", "line": "#1f3a30", "line-2": "#ece9dd", "accent": "#e2b766", "on-accent": "#0d1f19", "s-design": "#93abff", "s-cnc": "#ff9466", "s-prod": "#6fd29a", "s-staff": "#c2a8f0", "focus": "#e2b766", "shadow": "none"}}}</script>
 <script id="hub-main">
@@ -316,7 +318,8 @@ var GROUPS = [
   {id:'design',lt:'Projektavimas',en:'Design'},
   {id:'cnc',lt:'CNC paruošimas',en:'CNC prep'},
   {id:'production',lt:'Gamyba',en:'Production'},
-  {id:'staff',lt:'Biuras',en:'Office'}
+  {id:'staff',lt:'Darbuotojams',en:'Staff'},
+  {id:'office',lt:'Biuras',en:'Office'}
 ];
 var DIRS = [
   {id:'lapas',name:'Lapas',en:'Sheet'},
@@ -333,7 +336,7 @@ var ICONS = {
   doc:'<path d="M6 3h9l4 4v14H6zM15 3v4h4M9 12h7M9 16h5"/>',
   generic:'<rect x="4" y="4" width="16" height="16"/><path d="M8 12h8M12 8v8"/>'
 };
-var MARK = '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" aria-hidden="true"><rect x="9" y="6" width="30" height="34"/><path d="M24 6v21M9 27h30M9 33.5h30M19 15v4M29 15v4M22 30.25h4M22 36.75h4M13 40v3M35 40v3"/></svg>';
+var MARK = '<span class="dbl" role="img" aria-label="Dėdės Baldai"></span>';
 var ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>';
 var SEARCH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4-4"/></svg>';
 var CABINET = '<svg viewBox="0 0 320 212" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true">'+
@@ -793,44 +796,86 @@ if(window.claude&&window.claude.use){
 }
 })();
 </script>
-<!-- Office tiles: 🔒 while the office sign-in is closed on this computer (see workshop-auth.js, slot "office").
-     Read-only here: the hub never signs anyone in or keeps the office sign-in alive. -->
+<!-- Office tiles: locked until the office sign-in is open on this computer (workshop-auth.js, slot "office").
+     Read-only here: the hub never signs anyone in and never keeps the office sign-in alive. -->
 <style>
-.office-lock{position:absolute;top:14px;right:50px;font-size:15px;line-height:1;pointer-events:none;filter:grayscale(.2)}
-a[data-office]{position:relative}
-#office-pc{position:fixed;left:12px;bottom:12px;z-index:50;display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;
-  font:12px/1.2 system-ui,sans-serif;background:rgba(255,255,255,.88);color:#3a403c;border:1px solid rgba(0,0,0,.12);cursor:pointer}
-#office-pc input{margin:0}
-@media (prefers-color-scheme:dark){#office-pc{background:rgba(25,29,27,.9);color:#c9d0ca;border-color:rgba(255,255,255,.14)}}
-@media print{#office-pc,.office-lock{display:none}}
+[data-g="office"]{--stage:#4d5b6a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) [data-g="office"]{--stage:#9aa8b6}}
+:root[data-theme="dark"] [data-g="office"]{--stage:#9aa8b6}
+
+/* lock badge — same box, type and line weight as the number badge (.kbd) */
+.lk{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 8px 0 7px;margin-left:auto;
+  font:500 10.5px/1 'IBM Plex Mono',ui-monospace,Menlo,monospace;letter-spacing:.07em;text-transform:uppercase;white-space:nowrap;
+  color:var(--muted);background:var(--surface);box-shadow:inset 0 0 0 1px var(--line-2);
+  transition:color .15s,box-shadow .15s,background .15s}
+.lk svg{width:12px;height:12px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:square;stroke-linejoin:miter}
+.lk + .kbd{margin-left:6px !important}
+.lk .lk-hover{display:none}
+.lk.float{position:absolute;top:12px;right:12px;z-index:2}
+a[data-locked]{position:relative}
+a[data-locked] .L-ico,a[data-locked] [class*="-ico"]{opacity:.45;transition:opacity .15s}
+a[data-locked]:hover .lk,a[data-locked]:focus-visible .lk{color:var(--surface);background:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+a[data-locked]:hover .lk .lk-rest,a[data-locked]:focus-visible .lk .lk-rest{display:none}
+a[data-locked]:hover .lk .lk-hover,a[data-locked]:focus-visible .lk .lk-hover{display:inline}
+a[data-locked]:hover [class*="-ico"],a[data-locked]:focus-visible [class*="-ico"]{opacity:.8}
+/* open: quiet, with the time left before it locks again */
+.lk.open{color:var(--stage);box-shadow:inset 0 0 0 1px currentColor}
+.lk.open.soon{color:#b4541e}
+@media (prefers-reduced-motion:reduce){.lk,a[data-locked] [class*="-ico"]{transition:none}}
+
+#office-pc{position:static;width:max-content;margin:4px auto 28px;display:flex;align-items:center;gap:7px;padding:6px 11px 6px 9px;
+  font:500 10.5px/1.2 'IBM Plex Mono',ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--surface);color:var(--muted);box-shadow:inset 0 0 0 1px var(--line-2);cursor:pointer}
+#office-pc input{margin:0;accent-color:var(--ink)}
+#office-pc:hover{color:var(--ink)}
+@media print{#office-pc,.lk{display:none}}
 </style>
 <script>
 (function(){
   var KEY='sb-niveinyzkkwtreeeaziv-auth-token-office', IDLE='workshop.office.lastActive', PC='workshop.officeComputer', MIN=10;
-  var OFFICE=['https://gervdalius-droid.github.io/offer/','https://gervdalius-droid.github.io/hub/prasymai/'];
+  var OFFICE=['https://gervdalius-droid.github.io/offer/','https://gervdalius-droid.github.io/hub/prasymai/'];   // TEMP: Prašymai locked until its worker form goes live
+  var SHUT='<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 5.5h7v5h-7zM4 5.5V3.8a2 2 0 0 1 4 0v1.7"/></svg>';
+  var OPEN='<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 5.5h7v5h-7zM4 5.5V3.8a2 2 0 0 1 3.9-.6"/></svg>';
   function ls(k){try{return localStorage.getItem(k);}catch(e){return null;}}
-  function open(){
+  function state(){
     var s=null;try{s=JSON.parse(ls(KEY)||'null');}catch(e){}
-    if(!s||!s.access_token)return false;
-    return ls(PC)==='1'||Date.now()-(+ls(IDLE)||0)<MIN*60000;
+    if(ls(PC)==='1')return {pc:true};
+    if(!s||!s.access_token)return {locked:true};
+    var left=MIN-(Date.now()-(+ls(IDLE)||0))/60000;
+    return left>0?{left:Math.max(1,Math.ceil(left))}:{locked:true};
+  }
+  function badge(a,html,cls,label){
+    var b=a.querySelector('.lk');
+    if(!b){b=document.createElement('span');var k=a.querySelector('.kbd');
+      if(k&&k.parentNode){k.parentNode.insertBefore(b,k);}else{b.classList.add('float');a.appendChild(b);}}
+    b.className='lk'+(b.classList.contains('float')?' float':'')+(cls?' '+cls:'');
+    if(b.innerHTML!==html)b.innerHTML=html;
+    a.setAttribute('aria-label',(a.querySelector('h3,h2')||a).textContent.trim()+' — '+label);
   }
   function decorate(){
-    var o=open();
+    var st=state();
     document.querySelectorAll('a[href]').forEach(function(a){
       if(OFFICE.indexOf(a.href.split('?')[0])<0)return;
-      a.setAttribute('data-office','');
-      var b=a.querySelector('.office-lock');
-      if(o){if(b)b.remove();a.removeAttribute('title');return;}
-      if(!b){b=document.createElement('span');b.className='office-lock';b.setAttribute('aria-hidden','true');b.textContent='🔒';a.appendChild(b);}
-      a.title='Atsidarys įvedus biuro PIN';
+      var b=a.querySelector('.lk');
+      if(st.pc){if(b)b.remove();a.removeAttribute('data-locked');a.removeAttribute('aria-label');a.removeAttribute('title');return;}
+      if(st.locked){
+        a.setAttribute('data-locked','');a.title='Atsidarys įvedus biuro PIN';
+        badge(a,SHUT+'<span class="lk-rest">Biuro PIN</span><span class="lk-hover">Atrakinti</span>','', 'užrakinta, reikia biuro PIN');
+      }else{
+        a.removeAttribute('data-locked');a.title='Užsirakins po '+st.left+' min. be veiklos';
+        badge(a,OPEN+'<span>Atrakinta · '+st.left+' min</span>',st.left<=2?'open soon':'open','atrakinta, užsirakins po '+st.left+' min.');
+      }
     });
-    var cb=document.querySelector('#office-pc input');if(cb)cb.checked=ls(PC)==='1';
+    var cb=document.querySelector('#office-pc input');if(cb)cb.checked=!!st.pc;
   }
-  var t=null;new MutationObserver(function(){clearTimeout(t);t=setTimeout(decorate,30);}).observe(document.documentElement,{childList:true,subtree:true});
-  window.addEventListener('storage',decorate);window.addEventListener('focus',decorate);setInterval(decorate,30000);
+  var t=null;new MutationObserver(function(m){
+    if(m.every(function(x){return x.target.closest&&x.target.closest('.lk');}))return;   // ignore our own badge updates
+    clearTimeout(t);t=setTimeout(decorate,30);
+  }).observe(document.documentElement,{childList:true,subtree:true});
+  window.addEventListener('storage',decorate);window.addEventListener('focus',decorate);setInterval(decorate,15000);
   var lbl=document.createElement('label');lbl.id='office-pc';
-  lbl.innerHTML='<input type="checkbox"> Biuro kompiuteris <span style="opacity:.6">(neužrakinti)</span>';
-  lbl.title='Pažymėkite tik biuro kompiuteryje: biuro programos neužsirakins po 10 min. Dirbtuvėse palikite nepažymėtą.';
+  lbl.innerHTML='<input type="checkbox"> Biuro kompiuteris';
+  lbl.title='Pažymėkite tik biuro kompiuteryje: biuro programos čia neužsirakins. Dirbtuvėse palikite nepažymėtą — tada užsirakina po 10 min. be veiklos.';
   lbl.querySelector('input').addEventListener('change',function(e){
     try{if(e.target.checked){localStorage.setItem(PC,'1');}else{localStorage.removeItem(PC);}localStorage.setItem(IDLE,String(Date.now()));}catch(_){}
     decorate();
