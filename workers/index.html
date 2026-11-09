@@ -63,6 +63,19 @@ td.act button{margin-left:4px}
     <div class="msg" id="listMsg"></div>
   </section>
 
+  <section class="card" id="hubCard" hidden>
+    <h2>Hub slaptažodis</h2>
+    <p class="note" id="hubState" style="margin-bottom:12px">…</p>
+    <form class="add" id="hubForm" autocomplete="off" style="grid-template-columns:1fr auto">
+      <label>Naujas slaptažodis (bent 6 simboliai)<input name="pw" type="password" minlength="6" autocomplete="new-password" required></label>
+      <button class="primary" type="submit">Išsaugoti</button>
+    </form>
+    <label style="display:flex;gap:6px;align-items:center;margin-top:8px"><input type="checkbox" id="hubShow" style="width:auto;margin:0"> Rodyti slaptažodį</label>
+    <div class="msg" id="hubMsg"></div>
+    <p class="note">Saugo hub ir programas be prisijungimo (Braižyklė, DXF redaktorius, XXL Fix) nuo pašalinių, turinčių nuorodą. Įvedus kartą, įrenginys atsimenamas 180 dienų. Kas prisijungęs vardu ir PIN — slaptažodžio neveda. Pakeitus slaptažodį, visi įrenginiai turės įvesti naują.</p>
+    <button class="small" id="hubOff" type="button" hidden style="margin-top:10px">Išjungti slaptažodį</button>
+  </section>
+
   <p class="note" id="info">Prisijungimas tuo pačiu vardu ir PIN veikia visose programose. Pasiūlymai, Prašymai ir CRM atsidaro rolėms „Biuras“ ir „Administratorius“. Užblokuotas darbuotojas iškart netenka prieigos visur.</p>
 </main>
 
@@ -137,12 +150,38 @@ td.act button{margin-left:4px}
       .then(function () { b.disabled = false; });
   };
 
+  function hubLoad() {
+    return W.rest("rpc/hub_info", { method: "POST", body: "{}" }).then(function (h) {
+      var d = h && h.changed_at ? new Date(h.changed_at).toLocaleDateString("lt-LT") : "";
+      $("hubState").innerHTML = h && h.set
+        ? "<b>Įjungtas</b> · pakeistas " + esc(d) + " · įrenginių su raktu: " + esc(h.devices) + (h.failed_10min ? " · nepavykusių bandymų per 10 min.: " + esc(h.failed_10min) : "")
+        : "<b>Neįjungtas</b> — hub atidarytas kiekvienam, kas turi nuorodą.";
+      $("hubOff").hidden = !(h && h.set);
+    }, function (e) { msg($("hubMsg"), e.message, true); });
+  }
+  $("hubShow").onchange = function () { $("hubForm").elements.pw.type = this.checked ? "text" : "password"; };
+  $("hubForm").onsubmit = function (ev) {
+    ev.preventDefault();
+    var f = ev.target, pw = f.elements.pw.value, b = f.querySelector("button");
+    if (pw.length < 6) { msg($("hubMsg"), "Slaptažodis turi būti bent 6 simbolių.", true); return; }
+    b.disabled = true;
+    W.rest("rpc/hub_set_password", { method: "POST", body: JSON.stringify({ p_password: pw }) })
+      .then(function () { f.reset(); $("hubShow").checked = false; f.elements.pw.type = "password"; msg($("hubMsg"), "Išsaugota. Visi įrenginiai turės įvesti naują slaptažodį."); return hubLoad(); },
+            function (e) { msg($("hubMsg"), /bent 6/.test(e.message) ? "Slaptažodis turi būti bent 6 simbolių." : e.message, true); })
+      .then(function () { b.disabled = false; });
+  };
+  $("hubOff").onclick = function () {
+    if (!confirm("Išjungti hub slaptažodį? Hub bus atidarytas kiekvienam, kas turi nuorodą.")) return;
+    W.rest("rpc/hub_clear_password", { method: "POST", body: "{}" }).then(function () { msg($("hubMsg"), "Slaptažodis išjungtas."); return hubLoad(); }, function (e) { msg($("hubMsg"), e.message, true); });
+  };
+
   function start(me) {
     if (!me) { $("me").textContent = ""; $("info").textContent = "Prisijunkite, kad tvarkytumėte darbuotojus."; return W.gate({ title: "Darbuotojų tvarkymas" }).then(start); }
     $("me").innerHTML = esc(me.display_name) + ' <button class="small" id="out">Atsijungti</button>';
     $("out").onclick = function () { W.logout(); location.reload(); };
     if (me.role !== "admin") { $("info").textContent = "Šis puslapis skirtas tik administratoriams."; return; }
-    $("addCard").hidden = false; $("listCard").hidden = false;
+    $("addCard").hidden = false; $("listCard").hidden = false; $("hubCard").hidden = false;
+    hubLoad();
     return load();
   }
   (W.signedIn() ? W.me() : Promise.resolve(null)).then(start);
