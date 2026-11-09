@@ -259,12 +259,12 @@ button,input,select{font:inherit;color:inherit}
 <body>
 <div id="app"></div>
 <div id="print" aria-hidden="true"></div>
+<script src="../workers/workshop-auth.js"></script>
 <script>
 (function(){
 'use strict';
 /* ================= constants ================= */
-var STORE_KEY='dedes.prasymai.v1', AUTH_KEY='dedes.prasymai.auth', ROW_ID='dedes-prasymai';
-var ADOPT_FROM=['shop.auth.v1','inv_cloud'];
+var STORE_KEY='dedes.prasymai.v1', ROW_ID='dedes-prasymai';
 var HUB_URL='../shopfloor/';
 var XLSX_URL='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
 var TYPES=['atostogos','tevadienis','mamadienis'];
@@ -447,39 +447,26 @@ function sheetHTML(r){var d=docOf(r);return '<div class="sheet '+d.margins+'">'+
 var Cloud={
   cfg:null,status:'local',msg:'',last:0,_t:null,_busy:null,
   read:function(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch(e){return null;}},
-  init:function(){
-    var own=this.read(AUTH_KEY);
-    if(own&&own.url&&own.key&&own.refresh){this.cfg=own;}
-    else{for(var i=0;i<ADOPT_FROM.length;i++){var c=this.read(ADOPT_FROM[i]);if(c&&c.url&&c.key&&c.refresh){this.cfg={url:c.url,key:c.key,email:c.email||'',table:c.table||'workspaces',adopted:ADOPT_FROM[i]};break;}}}
+  /* Workshop login (workshop-auth.js): same sign-in as the other apps; this page
+     opens only for managers, and the database lets only managers read this row. */
+  who:null,
+  init:function(me){
+    var W=window.WorkshopAuth;this.who=me||null;
+    this.cfg=(W&&W.signedIn()&&me)?{url:W.cfg.url,key:W.cfg.key,email:me.display_name,table:'workspaces'}:null;
     this.status=this.on()?'idle':'local';
   },
-  on:function(){if(!this.cfg)return false;if(this.cfg.adopted){var c=this.read(this.cfg.adopted);return !!(c&&c.refresh);}return !!this.cfg.refresh;},
-  known:function(){var c=this.cfg||{};if(c.url)return c;for(var i=0;i<ADOPT_FROM.length;i++){var x=this.read(ADOPT_FROM[i]);if(x&&x.url&&x.key)return x;}var w=window.CLOUD_CONFIG||{};return {url:w.url||'',key:w.key||w.anonKey||'',email:w.email||''};},
+  on:function(){return !!(this.cfg&&window.WorkshopAuth&&WorkshopAuth.signedIn());},
+  known:function(){var W=window.WorkshopAuth;return W?{url:W.cfg.url,key:W.cfg.key}:{};},
   base:function(){return String(this.cfg.url||'').replace(/\/+$/,'');},
   /* Adopted sessions are read fresh from their owner each time and written back after a
      refresh, so this app and the invoices app keep one token chain between them. */
   token:async function(){
-    var src=this.cfg.adopted?this.read(this.cfg.adopted):this.cfg;
-    if(!src||!src.refresh)throw new Error('not signed in');
-    if(src.token&&Date.now()<(src.exp||0)-60000)return src.token;
-    var r=await fetch(this.base()+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:this.cfg.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:src.refresh})});
-    var j=await r.json().catch(function(){return {};});
-    if(!r.ok)throw new Error(j.error_description||j.msg||('HTTP '+r.status));
-    src.token=j.access_token;src.refresh=j.refresh_token||src.refresh;src.exp=Date.now()+(j.expires_in||3600)*1000;
-    try{localStorage.setItem(this.cfg.adopted||AUTH_KEY,JSON.stringify(src));}catch(e){}
-    if(!this.cfg.adopted)this.cfg=src;
-    return src.token;
+    var tok=await WorkshopAuth.token();
+    if(!tok)throw new Error('not signed in');
+    return tok;
   },
-  signIn:async function(url,key,email,pw){
-    url=String(url||'').replace(/\/+$/,'');
-    var r=await fetch(url+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:key,'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw})});
-    var j=await r.json().catch(function(){return {};});
-    if(!r.ok)throw new Error(j.error_description||j.msg||j.error||('HTTP '+r.status));
-    this.cfg={url:url,key:key,email:email,table:'workspaces',token:j.access_token,refresh:j.refresh_token,exp:Date.now()+(j.expires_in||3600)*1000};
-    try{localStorage.setItem(AUTH_KEY,JSON.stringify(this.cfg));}catch(e){}
-    this.status='idle';return this.sync();
-  },
-  signOut:function(){try{localStorage.removeItem(AUTH_KEY);}catch(e){}this.cfg=null;this.status='local';this.msg='';render();},
+  signIn:async function(){var me=await WorkshopAuth.requireArea('prasymai',{lang:lang,title:'Prašymai'});this.init(me);render();return this.sync();},
+  signOut:function(){WorkshopAuth.logout();location.reload();},
   rest:async function(path,opts){
     var tok=await this.token(),o=Object.assign({},opts||{});
     o.headers=Object.assign({apikey:this.cfg.key,Authorization:'Bearer '+tok,'Content-Type':'application/json'},o.headers||{});
@@ -698,14 +685,10 @@ function renderSet(){
   var k=Cloud.known(),signed=Cloud.on(),c=Cloud.cfg||{};
   var sync='<div class="panel"><h2>'+t('setSync')+'</h2><p>'+t('syncAbout')+'</p>';
   if(signed){
-    sync+='<dl class="kv"><dt>'+t('signedAs')+'</dt><dd>'+esc(c.email||(Cloud.read(c.adopted)||{}).email||'—')+(c.adopted?' ('+t('via')+' '+esc(c.adopted)+')':'')+'</dd><dt>URL</dt><dd>'+esc(c.url)+'</dd><dt>Status</dt><dd>'+esc(Cloud.status==='ok'?tf('syncOk',{t:fmtTs(Cloud.last)}):Cloud.status==='error'?t('syncErr')+': '+Cloud.msg:Cloud.status)+'</dd></dl>'+
-      '<div class="actions" style="border:0;padding:0"><button type="button" class="btn sm" id="s-sync">'+t('syncNow')+'</button>'+(c.adopted?'':'<button type="button" class="btn ghost sm" id="s-out">'+t('signOut')+'</button>')+'</div>';
+    sync+='<dl class="kv"><dt>'+t('signedAs')+'</dt><dd>'+esc(c.email||'—')+'</dd><dt>URL</dt><dd>'+esc(c.url)+'</dd><dt>Status</dt><dd>'+esc(Cloud.status==='ok'?tf('syncOk',{t:fmtTs(Cloud.last)}):Cloud.status==='error'?t('syncErr')+': '+Cloud.msg:Cloud.status)+'</dd></dl>'+
+      '<div class="actions" style="border:0;padding:0"><button type="button" class="btn sm" id="s-sync">'+t('syncNow')+'</button>'+'<button type="button" class="btn ghost sm" id="s-out">'+t('signOut')+'</button>'+'</div>';
   }else{
-    sync+='<form id="s-form" class="set-form" style="display:flex;flex-direction:column;gap:12px">'+
-      (k.url&&k.key?'':'<label class="fld"><span>'+t('url')+'</span><input id="s-url" value="'+esc(k.url||'')+'" placeholder="https://….supabase.co"></label><label class="fld"><span>'+t('key')+'</span><input id="s-key" value="'+esc(k.key||'')+'"></label>')+
-      '<label class="fld"><span>'+t('email')+'</span><input id="s-email" type="email" autocomplete="username" value="'+esc(k.email||'')+'"></label>'+
-      '<label class="fld"><span>'+t('pw')+'</span><input id="s-pw" type="password" autocomplete="current-password"></label>'+
-      '<div><button type="submit" class="btn sm">'+t('signIn')+'</button></div><span class="fld"><span class="msg" id="s-msg"></span></span></form>';
+    sync+='<div class="actions" style="border:0;padding:0"><button type="button" class="btn sm" id="s-in">'+t('signIn')+'</button></div>';
   }
   sync+='</div>';
   var doc='<div class="panel"><h2>'+t('setDoc')+'</h2><p>'+t('setDocS')+'</p>'+
@@ -824,6 +807,7 @@ app.addEventListener('click',function(e){
     S.settings=Object.assign({},S.settings,{companyAtost:val('s-coA'),companyDay:val('s-coD'),director:val('s-dir'),city:val('s-city'),updatedAt:Date.now()});persist();render();toast(t('setSaved'));return;}
   if(b.id==='s-sync'){Cloud.sync().then(render);return;}
   if(b.id==='s-out'){Cloud.signOut();return;}
+  if(b.id==='s-in'){Cloud.signIn();return;}
 });
 function val(id){var el=document.getElementById(id);return el?el.value.trim():'';}
 var empT=null;
@@ -851,21 +835,14 @@ app.addEventListener('change',function(e){
   if(el.name==='leave'){form.leave=el.value;refreshLive();return;}
   if(el.dataset.status){var r=S.requests[el.dataset.status];r.status=el.value;r.updatedAt=Date.now();persist();render();return;}
 });
-app.addEventListener('submit',function(e){
-  if(e.target.id!=='s-form')return;e.preventDefault();
-  var k=Cloud.known(),url=val('s-url')||k.url,key=val('s-key')||k.key,msg=document.getElementById('s-msg');
-  msg.textContent='…';
-  Cloud.signIn(url,key,val('s-email'),document.getElementById('s-pw').value).then(function(){render();toast(t('syncOk').replace('{t}',''));})
-    .catch(function(err){msg.textContent=tf('signErr',{e:err.message});});
-});
 window.addEventListener('hashchange',route);
 window.addEventListener('storage',function(e){if(e.key===STORE_KEY){load();if(!document.activeElement||!/^(INPUT|SELECT)$/.test(document.activeElement.tagName))render();}});
 window.addEventListener('focus',function(){Cloud.sync();});
 setInterval(function(){Cloud.sync();},60000);
 
-Cloud.init();
 route();
-Cloud.sync();
+WorkshopAuth.requireArea('prasymai',{lang:lang,title:'Prašymai'}).then(function(me){Cloud.init(me);render();Cloud.sync();});
+WorkshopAuth.onChange(function(s){if(!s&&Cloud.who)location.reload();});
 window.__prasymai={S:S,docOf:docOf,workDays:workDays,holidays:holidays,merge:merge,rowsFor:rowsFor};
 })();
 </script>
