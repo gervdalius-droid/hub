@@ -93,7 +93,7 @@ td.act button{margin-left:4px}
   function load() {
     return call({ action: "list" }).then(function (d) {
       var rows = (d.members || []).map(function (m) {
-        return '<tr class="' + (m.active ? "" : "off") + '" data-id="' + esc(m.user_id) + '">' +
+        return '<tr class="' + (m.active ? "" : "off") + '" data-id="' + esc(m.user_id) + '" data-role="' + esc(m.role) + '">' +
           "<td>" + esc(m.display_name) + "</td>" +
           '<td><span class="tag">' + esc(ROLE[m.role] || m.role) + "</span></td>" +
           "<td>" + (m.active ? "Aktyvus" : "Užblokuotas") + "</td>" +
@@ -124,7 +124,11 @@ td.act button{margin-left:4px}
       body = { action: "pin", user_id: id, pin: pin.trim() };
     } else {
       var on = b.getAttribute("data-v") === "1";
-      if (!on && !confirm("Užblokuoti " + name + "? Prieiga visose programose bus nutraukta.")) return;
+      var role = b.closest("tr").getAttribute("data-role");
+      var why = role === "shop"
+        ? "Tai dirbtuvės planšetės paskyra: užblokavus ShopFlow planšetėse iškart nustos veikti."
+        : "Prieiga visose programose bus nutraukta.";
+      if (!on && !confirm("Užblokuoti " + name + "?\n\n" + why)) return;
       body = { action: "active", user_id: id, active: on };
     }
     b.disabled = true;
