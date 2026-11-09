@@ -49,7 +49,7 @@ td.act button{margin-left:4px}
     <form class="add" id="add" autocomplete="off">
       <label>Vardas<input name="name" required placeholder="pvz. Jonas"></label>
       <label>PIN (6 skaitm.)<input name="pin" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required></label>
-      <label>Rolė<select name="role"><option value="worker">Darbuotojas</option><option value="manager">Vadovas</option><option value="admin">Administratorius</option><option value="shop">Dirbtuvės planšetė</option></select></label>
+      <label>Rolė<select name="role"><option value="worker">Darbuotojas (dirbtuvės programos)</option><option value="manager">Biuras (visos programos)</option><option value="admin">Administratorius</option><option value="shop">Dirbtuvės planšetė</option></select></label>
       <button class="primary" type="submit">Pridėti</button>
     </form>
     <div class="msg" id="addMsg"></div>
@@ -61,7 +61,7 @@ td.act button{margin-left:4px}
     <div class="msg" id="listMsg"></div>
   </section>
 
-  <p class="note" id="info">Prisijungimas tuo pačiu vardu ir PIN veikia visose programose. Pasiūlymai ir Prašymai atsidaro tik vadovams ir administratoriams. Užblokuotas darbuotojas iškart netenka prieigos visur.</p>
+  <p class="note" id="info">Prisijungimas tuo pačiu vardu ir PIN veikia visose programose. Pasiūlymai, Prašymai, CRM ir Sąskaitos atsidaro rolėms „Biuras“ ir „Administratorius“. Užblokuotas darbuotojas iškart netenka prieigos visur.</p>
 </main>
 
 <script src="workshop-auth.js"></script>
@@ -69,7 +69,7 @@ td.act button{margin-left:4px}
 (function () {
   "use strict";
   var W = WorkshopAuth, $ = function (id) { return document.getElementById(id); };
-  var ROLE = { worker: "Darbuotojas", manager: "Vadovas", admin: "Administratorius", shop: "Dirbtuvės planšetė" };
+  var ROLE = { worker: "Darbuotojas", manager: "Biuras", admin: "Administratorius", shop: "Dirbtuvės planšetė" };
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   function msg(el, text, bad) { el.textContent = text || ""; el.className = "msg" + (text ? (bad ? " bad" : " ok") : ""); }
 
