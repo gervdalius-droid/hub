@@ -794,47 +794,86 @@ if(window.claude&&window.claude.use){
 }
 })();
 </script>
-<!-- Office tiles: 🔒 while the office sign-in is closed on this computer (see workshop-auth.js, slot "office").
-     Read-only here: the hub never signs anyone in or keeps the office sign-in alive. -->
+<!-- Office tiles: locked until the office sign-in is open on this computer (workshop-auth.js, slot "office").
+     Read-only here: the hub never signs anyone in and never keeps the office sign-in alive. -->
 <style>
-.office-lock{position:absolute;top:14px;right:50px;font-size:15px;line-height:1;pointer-events:none;filter:grayscale(.2)}
-a[data-office]{position:relative}
 [data-g="office"]{--stage:#4d5b6a}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) [data-g="office"]{--stage:#9aa8b6}}
 :root[data-theme="dark"] [data-g="office"]{--stage:#9aa8b6}
-#office-pc{position:fixed;left:12px;bottom:12px;z-index:50;display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;
-  font:12px/1.2 system-ui,sans-serif;background:rgba(255,255,255,.88);color:#3a403c;border:1px solid rgba(0,0,0,.12);cursor:pointer}
-#office-pc input{margin:0}
-@media (prefers-color-scheme:dark){#office-pc{background:rgba(25,29,27,.9);color:#c9d0ca;border-color:rgba(255,255,255,.14)}}
-@media print{#office-pc,.office-lock{display:none}}
+
+/* lock badge — same box, type and line weight as the number badge (.kbd) */
+.lk{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 8px 0 7px;margin-left:auto;
+  font:500 10.5px/1 'IBM Plex Mono',ui-monospace,Menlo,monospace;letter-spacing:.07em;text-transform:uppercase;white-space:nowrap;
+  color:var(--muted);background:var(--surface);box-shadow:inset 0 0 0 1px var(--line-2);
+  transition:color .15s,box-shadow .15s,background .15s}
+.lk svg{width:12px;height:12px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:square;stroke-linejoin:miter}
+.lk + .kbd{margin-left:6px !important}
+.lk .lk-hover{display:none}
+.lk.float{position:absolute;top:12px;right:12px;z-index:2}
+a[data-locked]{position:relative}
+a[data-locked] .L-ico,a[data-locked] [class*="-ico"]{opacity:.45;transition:opacity .15s}
+a[data-locked]:hover .lk,a[data-locked]:focus-visible .lk{color:var(--surface);background:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+a[data-locked]:hover .lk .lk-rest,a[data-locked]:focus-visible .lk .lk-rest{display:none}
+a[data-locked]:hover .lk .lk-hover,a[data-locked]:focus-visible .lk .lk-hover{display:inline}
+a[data-locked]:hover [class*="-ico"],a[data-locked]:focus-visible [class*="-ico"]{opacity:.8}
+/* open: quiet, with the time left before it locks again */
+.lk.open{color:var(--stage);box-shadow:inset 0 0 0 1px currentColor}
+.lk.open.soon{color:#b4541e}
+@media (prefers-reduced-motion:reduce){.lk,a[data-locked] [class*="-ico"]{transition:none}}
+
+#office-pc{position:fixed;left:12px;bottom:12px;z-index:50;display:flex;align-items:center;gap:7px;padding:6px 11px 6px 9px;
+  font:500 10.5px/1.2 'IBM Plex Mono',ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--surface);color:var(--muted);box-shadow:inset 0 0 0 1px var(--line-2);cursor:pointer}
+#office-pc input{margin:0;accent-color:var(--ink)}
+#office-pc:hover{color:var(--ink)}
+@media print{#office-pc,.lk{display:none}}
 </style>
 <script>
 (function(){
   var KEY='sb-niveinyzkkwtreeeaziv-auth-token-office', IDLE='workshop.office.lastActive', PC='workshop.officeComputer', MIN=10;
   var OFFICE=['https://gervdalius-droid.github.io/offer/'];   // Prašymai is open to everyone: workers fill in, office keeps the registry
+  var SHUT='<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 5.5h7v5h-7zM4 5.5V3.8a2 2 0 0 1 4 0v1.7"/></svg>';
+  var OPEN='<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 5.5h7v5h-7zM4 5.5V3.8a2 2 0 0 1 3.9-.6"/></svg>';
   function ls(k){try{return localStorage.getItem(k);}catch(e){return null;}}
-  function open(){
+  function state(){
     var s=null;try{s=JSON.parse(ls(KEY)||'null');}catch(e){}
-    if(!s||!s.access_token)return false;
-    return ls(PC)==='1'||Date.now()-(+ls(IDLE)||0)<MIN*60000;
+    if(ls(PC)==='1')return {pc:true};
+    if(!s||!s.access_token)return {locked:true};
+    var left=MIN-(Date.now()-(+ls(IDLE)||0))/60000;
+    return left>0?{left:Math.max(1,Math.ceil(left))}:{locked:true};
+  }
+  function badge(a,html,cls,label){
+    var b=a.querySelector('.lk');
+    if(!b){b=document.createElement('span');var k=a.querySelector('.kbd');
+      if(k&&k.parentNode){k.parentNode.insertBefore(b,k);}else{b.classList.add('float');a.appendChild(b);}}
+    b.className='lk'+(b.classList.contains('float')?' float':'')+(cls?' '+cls:'');
+    if(b.innerHTML!==html)b.innerHTML=html;
+    a.setAttribute('aria-label',(a.querySelector('h3,h2')||a).textContent.trim()+' — '+label);
   }
   function decorate(){
-    var o=open();
+    var st=state();
     document.querySelectorAll('a[href]').forEach(function(a){
       if(OFFICE.indexOf(a.href.split('?')[0])<0)return;
-      a.setAttribute('data-office','');
-      var b=a.querySelector('.office-lock');
-      if(o){if(b)b.remove();a.removeAttribute('title');return;}
-      if(!b){b=document.createElement('span');b.className='office-lock';b.setAttribute('aria-hidden','true');b.textContent='🔒';a.appendChild(b);}
-      a.title='Atsidarys įvedus biuro PIN';
+      var b=a.querySelector('.lk');
+      if(st.pc){if(b)b.remove();a.removeAttribute('data-locked');a.removeAttribute('aria-label');a.removeAttribute('title');return;}
+      if(st.locked){
+        a.setAttribute('data-locked','');a.title='Atsidarys įvedus biuro PIN';
+        badge(a,SHUT+'<span class="lk-rest">Biuro PIN</span><span class="lk-hover">Atrakinti</span>','', 'užrakinta, reikia biuro PIN');
+      }else{
+        a.removeAttribute('data-locked');a.title='Užsirakins po '+st.left+' min. be veiklos';
+        badge(a,OPEN+'<span>Atrakinta · '+st.left+' min</span>',st.left<=2?'open soon':'open','atrakinta, užsirakins po '+st.left+' min.');
+      }
     });
-    var cb=document.querySelector('#office-pc input');if(cb)cb.checked=ls(PC)==='1';
+    var cb=document.querySelector('#office-pc input');if(cb)cb.checked=!!st.pc;
   }
-  var t=null;new MutationObserver(function(){clearTimeout(t);t=setTimeout(decorate,30);}).observe(document.documentElement,{childList:true,subtree:true});
-  window.addEventListener('storage',decorate);window.addEventListener('focus',decorate);setInterval(decorate,30000);
+  var t=null;new MutationObserver(function(m){
+    if(m.every(function(x){return x.target.closest&&x.target.closest('.lk');}))return;   // ignore our own badge updates
+    clearTimeout(t);t=setTimeout(decorate,30);
+  }).observe(document.documentElement,{childList:true,subtree:true});
+  window.addEventListener('storage',decorate);window.addEventListener('focus',decorate);setInterval(decorate,15000);
   var lbl=document.createElement('label');lbl.id='office-pc';
-  lbl.innerHTML='<input type="checkbox"> Biuro kompiuteris <span style="opacity:.6">(neužrakinti)</span>';
-  lbl.title='Pažymėkite tik biuro kompiuteryje: biuro programos neužsirakins po 10 min. Dirbtuvėse palikite nepažymėtą.';
+  lbl.innerHTML='<input type="checkbox"> Biuro kompiuteris';
+  lbl.title='Pažymėkite tik biuro kompiuteryje: biuro programos čia neužsirakins. Dirbtuvėse palikite nepažymėtą — tada užsirakina po 10 min. be veiklos.';
   lbl.querySelector('input').addEventListener('change',function(e){
     try{if(e.target.checked){localStorage.setItem(PC,'1');}else{localStorage.removeItem(PC);}localStorage.setItem(IDLE,String(Date.now()));}catch(_){}
     decorate();
