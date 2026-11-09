@@ -146,6 +146,37 @@
 
     onChange: function (fn) { listeners.push(fn); },
 
+    isManager: function (me) { return !!me && (me.role === "admin" || me.role === "manager"); },
+    can: function (me, area) { return !!me && (!me.areas || me.areas.indexOf(area) >= 0); },
+
+    /** Block the page until a member who may use `area` is signed in.
+        Resolves {display_name, role, areas}. Workers on a manager-only page see a
+        notice with a button to sign in as someone else (the session stays shared). */
+    requireArea: function (area, opts) {
+      opts = opts || {};
+      var lt = (opts.lang || "lt") === "lt";
+      return (W.signedIn() ? W.me() : Promise.resolve(null)).then(function check(me) {
+        if (!me) return W.gate({ lang: opts.lang, title: opts.title, opaque: true }).then(check);
+        if (W.can(me, area)) return me;
+        return new Promise(function (resolve) {
+          var d = document.createElement("div");
+          d.setAttribute("role", "dialog"); d.setAttribute("aria-modal", "true");
+          d.style.cssText = "position:fixed;inset:0;z-index:9999;background:#0f1211;display:flex;align-items:center;justify-content:center;padding:16px;font:15px system-ui,sans-serif";
+          d.innerHTML = '<div style="background:#fff;color:#161a17;border-radius:12px;padding:22px;max-width:340px;display:flex;flex-direction:column;gap:12px">' +
+            '<b style="font-size:18px">' + (lt ? "Tik vadovams" : "Managers only") + '</b>' +
+            '<span style="color:#5b625d">' + (lt ? "Prisijungta kaip " : "Signed in as ") + String(me.display_name).replace(/[<&>"]/g, "") +
+            (lt ? ". Šis puslapis prieinamas tik vadovams." : ". This page is for managers only.") + '</span>' +
+            '<button type="button" style="padding:11px;border:0;border-radius:8px;background:#161a17;color:#fff;font-size:15px;cursor:pointer">' +
+            (lt ? "Prisijungti kitu vardu" : "Sign in as someone else") + '</button></div>';
+          document.body.appendChild(d);
+          d.querySelector("button").onclick = function () {
+            d.parentNode.removeChild(d); W.logout(true);
+            W.gate({ lang: opts.lang, title: opts.title, opaque: true }).then(check).then(resolve);
+          };
+        });
+      });
+    },
+
     /* ---- a small sign-in screen for apps that have none of their own ---- */
     gate: function (opts) {
       opts = opts || {};
@@ -157,7 +188,7 @@
       return new Promise(function (resolve) {
         var d = document.createElement("div");
         d.setAttribute("role", "dialog"); d.setAttribute("aria-modal", "true");
-        d.style.cssText = "position:fixed;inset:0;z-index:9999;background:rgba(15,18,16,.72);display:flex;align-items:center;justify-content:center;padding:16px;font:15px system-ui,sans-serif";
+        d.style.cssText = "position:fixed;inset:0;z-index:9999;background:" + (opts.opaque ? "#0f1211" : "rgba(15,18,16,.72)") + ";display:flex;align-items:center;justify-content:center;padding:16px;font:15px system-ui,sans-serif";
         d.innerHTML =
           '<form style="background:#fff;color:#161a17;border-radius:12px;padding:22px;width:100%;max-width:320px;display:flex;flex-direction:column;gap:10px;box-shadow:0 20px 60px rgba(0,0,0,.35)">' +
           '<b style="font-size:18px">' + T.h + '</b>' +
