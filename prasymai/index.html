@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#131715">
 <title>Prašymai · Dėdės Baldai</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' fill='%23131715'/%3E%3Cpath d='M14 8h14l6 6v26H14zM28 8v6h6M19 24h10M19 30h7' fill='none' stroke='%23f8f9f6' stroke-width='3'/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" href="https://gervdalius-droid.github.io/hub/shared/favicon-64.png">
+<link rel="apple-touch-icon" href="https://gervdalius-droid.github.io/hub/shared/touch-180.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap">
 <style>
 /* Layout: Lapas family. Header with sheet-style meta → tabs → (form 5fr | live A4 sheet 4fr) or (month index | calendar + register). */
@@ -254,18 +255,34 @@ button,input,select{font:inherit;color:inherit}
   #print .sheet{--mm:1mm;box-shadow:none;width:210mm;height:296mm;page-break-after:always}
   #print .sheet:last-child{page-break-after:auto}
 }
+.dbl{display:block;width:80%;height:80%;background:currentColor;-webkit-mask:url(https://gervdalius-droid.github.io/hub/shared/logo-mask.png) center/contain no-repeat;mask:url(https://gervdalius-droid.github.io/hub/shared/logo-mask.png) center/contain no-repeat}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <div id="print" aria-hidden="true"></div>
-<script>window.WORKSHOP_CLOUD={slot:"office"}</script>
+<script>
+/* Two ways in:
+   • worker  (default) — only the request form; sent requests go to an inbox the worker can't read.
+   • office  — the full registry; needs the office sign-in (workshop-auth.js slot "office").
+   Office mode when the office sign-in is open on this computer, or after "Registras 🔒". */
+(function(){
+  var K='sb-niveinyzkkwtreeeaziv-auth-token-office';
+  function g(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+  var s=null;try{s=JSON.parse(g(K)||'null');}catch(e){}
+  var open=!!(s&&s.access_token&&(g('workshop.officeComputer')==='1'||Date.now()-(+g('workshop.office.lastActive')||0)<600000));
+  var want=false;try{want=sessionStorage.getItem('prasymai.office')==='1';}catch(e){}
+  window.PRASYMAI_OFFICE=open||want;
+  window.WORKSHOP_CLOUD=window.PRASYMAI_OFFICE?{slot:'office'}:{};
+})();
+</script>
 <script src="../workers/workshop-auth.js"></script>
 <script>
 (function(){
 'use strict';
 /* ================= constants ================= */
-var STORE_KEY='dedes.prasymai.v1', ROW_ID='dedes-prasymai';
+var STORE_KEY='dedes.prasymai.v1', ROW_ID='dedes-prasymai', SET_ROW='dedes-prasymai-settings', INBOX='prasymai_inbox';
+var OFFICE=!!window.PRASYMAI_OFFICE;
 var HUB_URL='../shopfloor/';
 var XLSX_URL='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
 var TYPES=['atostogos','tevadienis','mamadienis'];
@@ -289,10 +306,10 @@ var IC={
   save:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 4h13l3 3v13H4zM8 4v5h7V4M8 20v-6h8v6"/></svg>',
   dl:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg>'
 };
-var MARK='<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" aria-hidden="true"><path d="M13 6h16l7 7v29H13zM29 6v7h7M19 24h11M19 31h8"/></svg>';
+var MARK = '<span class="dbl" role="img" aria-label="Dėdės Baldai"></span>';
 
 var T={
- lt:{title:'Prašymai',sub:'Dėdės Baldai · darbuotojų prašymai',hub:'← Programos',tNew:'Naujas prašymas',tReg:'Registras',tSet:'Nustatymai',
+ lt:{subW:'Užpildykite, pateikite ir, jei reikia, atsispausdinkite',sent:'Prašymas pateiktas. Biuras jį matys registre.',sendErr:'Nepavyko pateikti — patikrinkite ryšį ir bandykite dar kartą',inboxIn:'Nauji prašymai iš dirbtuvių: {n}',title:'Prašymai',sub:'Dėdės Baldai · darbuotojų prašymai',hub:'← Programos',tNew:'Naujas prašymas',tReg:'Registras',tSet:'Nustatymai',
    atostogos:'Atostogos',tevadienis:'Tėvadienis',mamadienis:'Mamadienis',atostogosS:'Kasmetinės ar nemokamos',tevadienisS:'Laisva diena tėčiui',mamadienisS:'Laisva diena mamai',
    pl:{atostogos:'Atostogos',tevadienis:'Tėvadieniai',mamadienis:'Mamadieniai'},
    s1:'1 · Prašymo rūšis',s2:'2 · Darbuotojas',s3:'3 · Datos',s4:'4 · Prašymo duomenys',
@@ -325,7 +342,7 @@ var T={
    setPrint:'Spausdinimas',printAbout:'Spausdinama per naršyklės spausdinimo langą į pasirinktą spausdintuvą. Biuro spausdintuvą nustatykite numatytuoju šiame kompiuteryje.',
    kiosk:'Kad spausdintų iš karto, be lango, Chrome paleiskite su parametru:',
    setData:'Duomenys',dataAbout:'{n} prašymų šiame kompiuteryje.',saveSet:'Išsaugoti nustatymus',setSaved:'Nustatymai išsaugoti'},
- en:{title:'Requests',sub:'Dėdės Baldai · staff requests',hub:'← Apps',tNew:'New request',tReg:'Register',tSet:'Settings',
+ en:{subW:'Fill in, submit and print if needed',sent:'Request submitted. The office will see it in the register.',sendErr:'Could not submit — check the connection and try again',inboxIn:'New requests from the workshop: {n}',title:'Requests',sub:'Dėdės Baldai · staff requests',hub:'← Apps',tNew:'New request',tReg:'Register',tSet:'Settings',
    atostogos:'Leave',tevadienis:'Father’s day off',mamadienis:'Mother’s day off',atostogosS:'Annual or unpaid',tevadienisS:'Day off for fathers',mamadienisS:'Day off for mothers',
    pl:{atostogos:'Leave',tevadienis:'Father’s days',mamadienis:'Mother’s days'},
    s1:'1 · Request type',s2:'2 · Employee',s3:'3 · Dates',s4:'4 · Request details',
@@ -366,7 +383,7 @@ var lang='lt', view='naujas';
 var regMonth=ym(new Date()), regType='all', regQ='', openMenu=false, delAsk=null;
 var form=blankForm(), formErr={}, pickMode='from', calMonth=null, editId=null;
 try{var l=localStorage.getItem('dedes.prasymai.lang');if(l==='lt'||l==='en')lang=l;}catch(e){}
-load();
+if(OFFICE)load();
 
 function blankForm(){return {type:'atostogos',employee:'',position:'',leave:'kasmetines',pay:true,from:'',to:'',reqDate:iso(new Date()),city:''};}
 function t(k){return T[lang][k];}
@@ -379,6 +396,7 @@ function load(){
     if(raw&&raw.requests){S.requests=raw.requests;S.settings=Object.assign({},DEFAULT_SETTINGS,raw.settings||{});}}catch(e){}
 }
 function persist(push){
+  if(!OFFICE)return;
   try{localStorage.setItem(STORE_KEY,JSON.stringify(S));}catch(e){}
   if(push!==false) Cloud.soon();
 }
@@ -485,8 +503,18 @@ var Cloud={
       try{
         var rows=await self.rest(table+'?id=eq.'+encodeURIComponent(ROW_ID)+'&select=id,data');
         var changed=merge(rows&&rows[0]&&rows[0].data);
+        // requests the workers sent → registry (status "pateiktas"), then out of the inbox
+        var inbox=await self.rest(INBOX+'?select=id,data,created_at&order=created_at');
+        var taken=[];
+        (inbox||[]).forEach(function(x){var r=x.data||{};if(!r.employee)return;
+          if(!S.requests[x.id]){r.id=x.id;r.status=r.status||'pateiktas';r.fromWorker=true;r.createdAt=r.createdAt||Date.parse(x.created_at)||Date.now();r.updatedAt=Date.now();S.requests[x.id]=r;changed=true;}
+          taken.push(x.id);});
         await self.rest(table,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},
           body:JSON.stringify({id:ROW_ID,data:S,updated_at:new Date().toISOString(),updated_by:((self.cfg.email||'').split('@')[0]||'prasymai')})});
+        if(taken.length)await self.rest(INBOX+'?id=in.('+taken.map(encodeURIComponent).join(',')+')',{method:'DELETE'});
+        await self.rest(table,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},
+          body:JSON.stringify({id:SET_ROW,data:{settings:S.settings},updated_at:new Date().toISOString(),updated_by:'prasymai'})});
+        if(taken.length&&changed)toast(tf('inboxIn',{n:taken.length}));
         self.status='ok';self.msg='';self.last=Date.now();
         if(changed){persist(false);if(!document.activeElement||!/^(INPUT|SELECT)$/.test(document.activeElement.tagName))render();}
         syncChip();return {ok:true};
@@ -508,6 +536,11 @@ function merge(remote){
 /* ================= views ================= */
 var app=document.getElementById('app');
 function headHTML(){
+  if(!OFFICE){
+    return '<header class="head"><div class="brand"><div class="mark">'+MARK+'</div><div><h1>'+t('title')+'</h1><p class="sub"><a href="'+HUB_URL+'">'+t('hub')+'</a> · '+t('subW')+'</p></div></div>'+
+      '<div class="ctl"><div class="seg" role="group" aria-label="Language"><button type="button" data-lang="lt" aria-pressed="'+(lang==='lt')+'">LT</button><button type="button" data-lang="en" aria-pressed="'+(lang==='en')+'">EN</button></div></div></header>'+
+      '<nav class="tabs"><a href="#naujas" aria-current="page">'+t('tNew')+'</a><a href="#registras" id="go-office">'+t('tReg')+' 🔒</a></nav>';
+  }
   var now=new Date(),key=ym(now),act=live().filter(function(r){return activeIn(r,key);});
   var outToday=live().filter(function(r){var rr=recRange(r);return rr[0]<=now&&addDays(rr[1],1)>now;}).length;
   return '<header class="head"><div class="brand"><div class="mark">'+MARK+'</div><div><h1>'+t('title')+'</h1><p class="sub"><a href="'+HUB_URL+'">'+t('hub')+'</a> · '+t('sub')+'</p></div></div>'+
@@ -614,8 +647,14 @@ function saveForm(){
     company:f.type==='atostogos'?setting('companyAtost'):setting('companyDay'),director:setting('director'),
     status:(old&&old.status)||'pateiktas',createdAt:(old&&old.createdAt)||now,updatedAt:now
   });
+  if(!OFFICE){sendToInbox(r);return r;}
   S.requests[r.id]=r;persist();
   return r;
+}
+function sendToInbox(r){
+  WorkshopAuth.rest(INBOX,{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({id:r.id,data:r})})
+    .then(function(){toast(t('sent'),3600);})
+    .catch(function(e){toast(t('sendErr')+' ('+(e&&e.message||e)+')',6000);});
 }
 function resetForm(keepType){var ty=form.type;form=blankForm();if(keepType)form.type=ty;formErr={};editId=null;calMonth=null;pickMode='from';}
 
@@ -710,7 +749,9 @@ function render(){
   app.innerHTML='<div class="page">'+headHTML()+'<main>'+body+'</main></div>';
 }
 var ROOT=document.documentElement;
-function route(){var h=location.hash.slice(1);view=['naujas','registras','nustatymai'].indexOf(h)>=0?h:'naujas';openMenu=false;delAsk=null;render();}
+function route(){var h=location.hash.slice(1);
+  if(!OFFICE&&h&&h!=='naujas'){try{sessionStorage.setItem('prasymai.office','1');}catch(e){}location.hash='';location.reload();return;}
+  view=['naujas','registras','nustatymai'].indexOf(h)>=0?h:'naujas';openMenu=false;delAsk=null;render();}
 function refreshPaper(){var p=document.getElementById('paper');if(p)p.innerHTML=sheetHTML(formRec());}
 function toast(m,ms){var el=document.createElement('div');el.className='toast';el.setAttribute('role','status');el.textContent=m;document.body.appendChild(el);setTimeout(function(){el.remove();},ms||2600);}
 
@@ -783,7 +824,7 @@ app.addEventListener('click',function(e){
   }
   if(b.id==='act-print'||b.id==='act-save'){
     var was=!!editId,r=saveForm();if(!r)return;
-    if(b.id==='act-print'){printRecs([r]);toast(t('printed'));}else toast(was?t('updated'):t('saved'));
+    if(b.id==='act-print'){printRecs([r]);if(OFFICE)toast(t('printed'));}else if(OFFICE)toast(was?t('updated'):t('saved'));
     resetForm(true);if(was){location.hash='registras';}else render();return;
   }
   if(b.id==='act-clear'){resetForm(true);render();return;}
@@ -807,7 +848,7 @@ app.addEventListener('click',function(e){
   if(b.id==='s-save'){['coA','coD','dir','city'].forEach(function(){});
     S.settings=Object.assign({},S.settings,{companyAtost:val('s-coA'),companyDay:val('s-coD'),director:val('s-dir'),city:val('s-city'),updatedAt:Date.now()});persist();render();toast(t('setSaved'));return;}
   if(b.id==='s-sync'){Cloud.sync().then(render);return;}
-  if(b.id==='s-out'){Cloud.signOut();return;}
+  if(b.id==='s-out'){WorkshopAuth.logout(true);leaveOffice();return;}
   if(b.id==='s-in'){Cloud.signIn();return;}
 });
 function val(id){var el=document.getElementById(id);return el?el.value.trim():'';}
@@ -842,8 +883,20 @@ window.addEventListener('focus',function(){Cloud.sync();});
 setInterval(function(){Cloud.sync();},60000);
 
 route();
-WorkshopAuth.requireArea('prasymai',{lang:lang,title:'Prašymai'}).then(function(me){Cloud.init(me);render();Cloud.sync();});
-WorkshopAuth.onChange(function(s){if(!s&&Cloud.who)location.reload();});
+function leaveOffice(){try{sessionStorage.removeItem('prasymai.office');}catch(e){}location.hash='';location.reload();}
+if(OFFICE){
+  WorkshopAuth.requireArea('prasymai',{lang:lang,title:'Prašymai — registras'}).then(function(me){Cloud.init(me);render();Cloud.sync();});
+  WorkshopAuth.onChange(function(s){if(!s&&Cloud.who)leaveOffice();});
+}else{
+  // the form needs a signed-in workshop account to send; settings come from the office
+  (WorkshopAuth.signedIn()?WorkshopAuth.me():Promise.resolve(null)).then(function chk(me){
+    if(!me)return WorkshopAuth.gate({lang:lang,title:'Prašymai'}).then(chk);
+    return WorkshopAuth.rest('workspaces?id=eq.'+SET_ROW+'&select=data').then(function(rows){
+      var st=rows&&rows[0]&&rows[0].data&&rows[0].data.settings;
+      if(st){S.settings=Object.assign({},DEFAULT_SETTINGS,st);render();}
+    }).catch(function(){});
+  });
+}
 window.__prasymai={S:S,docOf:docOf,workDays:workDays,holidays:holidays,merge:merge,rowsFor:rowsFor};
 })();
 </script>
