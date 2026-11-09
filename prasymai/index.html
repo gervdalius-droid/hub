@@ -465,7 +465,7 @@ var Cloud={
     if(!tok)throw new Error('not signed in');
     return tok;
   },
-  signIn:async function(){var me=await WorkshopAuth.requireArea('prasymai',{lang:lang,title:'Prašymai — tik vadovams'});this.init(me);render();return this.sync();},
+  signIn:async function(){var me=await WorkshopAuth.requireArea('prasymai',{lang:lang,title:'Prašymai'});this.init(me);render();return this.sync();},
   signOut:function(){WorkshopAuth.logout();location.reload();},
   rest:async function(path,opts){
     var tok=await this.token(),o=Object.assign({},opts||{});
@@ -841,7 +841,7 @@ window.addEventListener('focus',function(){Cloud.sync();});
 setInterval(function(){Cloud.sync();},60000);
 
 route();
-WorkshopAuth.requireArea('prasymai',{lang:lang,title:'Prašymai — tik vadovams'}).then(function(me){Cloud.init(me);render();Cloud.sync();});
+WorkshopAuth.requireArea('prasymai',{lang:lang,title:'Prašymai'}).then(function(me){Cloud.init(me);render();Cloud.sync();});
 WorkshopAuth.onChange(function(s){if(!s&&Cloud.who)location.reload();});
 window.__prasymai={S:S,docOf:docOf,workDays:workDays,holidays:holidays,merge:merge,rowsFor:rowsFor};
 })();
