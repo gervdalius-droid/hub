@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#131715">
 <link rel="icon" type="image/png" href="https://gervdalius-droid.github.io/hub/shared/favicon-64.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dėdės Baldai">
 <link rel="apple-touch-icon" href="https://gervdalius-droid.github.io/hub/shared/touch-180.png">
 <title>Dėdės Baldai Hub</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Big+Shoulders+Display:wght@700;800;900&family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap">
@@ -886,5 +889,14 @@ a[data-locked]:hover [class*="-ico"],a[data-locked]:focus-visible [class*="-ico"
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',add);else add();
 })();
 </script>
+<!-- Notices (bell + popups). The hub never signs anyone in: it uses the workshop
+     sign-in already open on this computer. The office sign-in is used only on a
+     computer ticked "Biuro kompiuteris" — so the hub can't keep an office sign-in
+     awake on a workshop computer. -->
+<script>(function(){function has(k){try{var s=JSON.parse(localStorage.getItem(k)||"null");return!!(s&&s.access_token);}catch(e){return false;}}
+var d="sb-niveinyzkkwtreeeaziv-auth-token",pc=false;try{pc=localStorage.getItem("workshop.officeComputer")==="1";}catch(e){}
+window.WORKSHOP_CLOUD={slot:(!has(d)&&pc&&has(d+"-office"))?"office":""};})();</script>
+<script src="../workers/workshop-auth.js"></script>
+<script src="/hub/shared/notices.js" defer></script>
 </body>
 </html>

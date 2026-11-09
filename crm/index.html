@@ -8,6 +8,7 @@
 <title>CRM · Dėdės Baldai</title>
 <link rel="icon" type="image/png" href="https://gervdalius-droid.github.io/hub/shared/favicon-64.png">
 <link rel="apple-touch-icon" href="https://gervdalius-droid.github.io/hub/shared/touch-180.png">
+<link rel="manifest" href="../manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap">
@@ -338,6 +339,7 @@ body.drag,body.drag *{cursor:grabbing!important}
       <button class="searchbtn" data-act="palette" aria-label="Ieškoti"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span>Ieškoti klientų, sandorių…</span><kbd>/</kbd></button>
       <button class="btn accent" data-act="quick"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="newlbl">Nauja užklausa</span><kbd>N</kbd></button>
       <button class="sync" id="sync" data-act="sync" data-s="busy"><i></i><span>Jungiamasi…</span></button>
+      <span id="ntc-mount" style="display:inline-flex"></span>
       <div class="me">
         <button class="avatar" id="meBtn" data-act="menu" aria-haspopup="true" aria-expanded="false">?</button>
         <div class="pop" id="menu" hidden></div>
@@ -357,6 +359,8 @@ body.drag,body.drag *{cursor:grabbing!important}
 
 <script>window.WORKSHOP_CLOUD = { slot: "office" };</script>
 <script src="../workers/workshop-auth.js"></script>
+<script>window.NOTICES_CFG = { mount: "#ntc-mount" };</script>
 <script src="crm.js"></script>
+<script src="/hub/shared/notices.js" defer></script>
 </body>
 </html>
