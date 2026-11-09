@@ -64,6 +64,7 @@ td.act button{margin-left:4px}
   <p class="note" id="info">Prisijungimas tuo pačiu vardu ir PIN veikia visose programose. Pasiūlymai, Prašymai ir CRM atsidaro rolėms „Biuras“ ir „Administratorius“. Užblokuotas darbuotojas iškart netenka prieigos visur.</p>
 </main>
 
+<script>window.WORKSHOP_CLOUD={slot:"office"}</script>
 <script src="workshop-auth.js"></script>
 <script>
 (function () {
@@ -138,6 +139,7 @@ td.act button{margin-left:4px}
     return load();
   }
   (W.signedIn() ? W.me() : Promise.resolve(null)).then(start);
+  W.onChange(function (s) { if (!s) location.reload(); });
 })();
 </script>
 </body>
